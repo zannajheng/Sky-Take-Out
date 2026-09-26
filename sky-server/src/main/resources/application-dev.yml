@@ -6,3 +6,9 @@ sky:
     database: sky_take_out
     username: root
     password: 123456
+  alioss:
+    endpoint: oss-cn-beijing.aliyuncs.com
+    bucketName: java-ai-01-zanna
+    region: cn-beijing
+    access-key-id: id
+    access-key-secret: secret
