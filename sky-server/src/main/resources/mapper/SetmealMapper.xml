@@ -45,7 +45,7 @@
 
     <!--    套餐分页查询-->
     <select id="page" resultType="com.sky.vo.SetmealVO">
-        select s.*, c.name as categorName
+        select s.*, c.name as categoryName
         from setmeal s
         left join category c
         on s.category_id = c.id
@@ -62,4 +62,5 @@
         </where>
         order by s.create_time desc
     </select>
+
 </mapper>
