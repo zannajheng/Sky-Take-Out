@@ -30,4 +30,13 @@
         </where>
         order by d.create_time desc
     </select>
+
+    <!--    根据菜品ID集合批量删除菜品-->
+    <delete id="deleteByIds">
+        delete from dish where id in
+        <foreach item="id" collection="ids" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
 </mapper>
