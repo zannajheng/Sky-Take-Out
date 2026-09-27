@@ -62,4 +62,14 @@ public interface DishMapper {
     动态条件查询菜品
      */
     List<Dish> list(Dish dish);
+
+    /*
+    根据套餐ID查询菜品
+     */
+    @Select("select dish.* " +
+            "from dish " +
+            "left join setmeal_dish " +
+            "on dish.id = setmeal_dish.dish_id " +
+            "where setmeal_dish.setmeal_id = #{setmealId}")
+    List<Dish> getBySetmealId(Long setmealId);
 }
