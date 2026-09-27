@@ -34,4 +34,12 @@
         </set>
         where id = #{id}
     </update>
+
+    <!--    新增套餐-->
+    <insert id="insert" parameterType="com.sky.entity.Setmeal" useGeneratedKeys="true" keyProperty="id">
+        insert into setmeal
+        (name, category_id, price, status, description, image, create_time, update_time, create_user, update_user)
+        values
+        (#{name}, #{categoryId}, #{price}, #{status}, #{description}, #{image}, #{createTime}, #{updateTime}, #{createUser}, #{updateUser})
+    </insert>
 </mapper>
