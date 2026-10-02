@@ -45,17 +45,17 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             ShoppingCart cart = list.get(0);
             cart.setNumber(cart.getNumber() + 1);
             shoppingCartMapper.updateNumberById(cart);
-        }else {
+        } else {
             //如果不存在，需要将商品加入购物车，插入一条数据
             //判断本次加购的是菜品还是套餐
             Long dishId = shoppingCartDTO.getDishId();
-            if(dishId != null){
+            if (dishId != null) {
                 //菜品
                 Dish dish = dishMapper.getById(dishId);
                 shoppingCart.setName(dish.getName());
                 shoppingCart.setImage(dish.getImage());
                 shoppingCart.setAmount(dish.getPrice());
-            }else {
+            } else {
                 //套餐
                 Long setmealId = shoppingCartDTO.getSetmealId();
                 Setmeal setmeal = setmealMapper.getById(setmealId);
@@ -89,5 +89,32 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         //获取到当前微信用户id
         Long userId = BaseContext.getCurrentId();
         shoppingCartMapper.deleteByUserId(userId);
+    }
+
+    /*
+    删除购物车中一个商品
+     */
+    public void subShoppingCart(ShoppingCartDTO shoppingCartDTO) {
+        ShoppingCart shoppingCart = new ShoppingCart();
+        BeanUtils.copyProperties(shoppingCartDTO, shoppingCart);
+        //获取到当前微信用户id
+        Long userId = BaseContext.getCurrentId();
+        shoppingCart.setUserId(userId);
+
+        List<ShoppingCart> list = shoppingCartMapper.list(shoppingCart);
+
+        if (list != null && list.size() > 0) {
+            shoppingCart = list.get(0);
+            Integer number = shoppingCart.getNumber();
+
+            if(number==1){
+                //直接删除这条记录
+                shoppingCartMapper.deleteById(shoppingCart.getId());
+            }else {
+                //数量减1
+                shoppingCart.setNumber(number-1);
+                shoppingCartMapper.updateNumberById(shoppingCart);
+            }
+        }
     }
 }
