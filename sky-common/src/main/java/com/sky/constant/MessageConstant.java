@@ -25,4 +25,5 @@ public class MessageConstant {
     public static final String ORDER_NOT_FOUND = "订单不存在";
 
     public static final String ALREADY_EXIST = "已存在";
+    public static final String NO_DEFAULT_ADDRESS = "没有查询到默认地址";
 }
