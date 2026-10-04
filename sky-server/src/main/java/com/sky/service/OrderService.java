@@ -76,4 +76,9 @@ public interface OrderService {
     派送订单
      */
     void delivery(Long id);
+
+    /*
+    完成订单
+     */
+    void complete(Long id);
 }
