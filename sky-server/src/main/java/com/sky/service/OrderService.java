@@ -66,4 +66,9 @@ public interface OrderService {
     拒单
      */
     void rejection(OrdersRejectionDTO ordersRejectionDTO) throws Exception;
+
+    /*
+    管理端取消订单
+     */
+    void cancel(OrdersCancelDTO ordersCancelDTO) throws Exception;
 }
