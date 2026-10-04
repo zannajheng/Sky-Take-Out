@@ -47,4 +47,9 @@ public interface OrderService {
     再来一单
      */
     void repetition(Long id);
+
+    /*
+    条件查询订单
+     */
+    PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO);
 }

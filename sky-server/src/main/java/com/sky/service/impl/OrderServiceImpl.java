@@ -23,6 +23,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -195,17 +196,17 @@ public class OrderServiceImpl implements OrderService {
     /*
     取消订单
      */
-    public void userCancelById(Long orderId) throws Exception{
+    public void userCancelById(Long orderId) throws Exception {
         //查询订单状态
-        Orders orders =  orderMapper.getById(orderId);
+        Orders orders = orderMapper.getById(orderId);
         //校验订单是否存在
-        if(orders == null){
+        if (orders == null) {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
         //订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
         Integer status = orders.getStatus();
 
-        if(status > 2){
+        if (status > 2) {
             throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
         }
 
@@ -214,7 +215,7 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         //如果在待接单状态下取消订单，需要给用户退款
-        if (status == Orders.TO_BE_CONFIRMED){
+        if (status == Orders.TO_BE_CONFIRMED) {
             //给用户退款
             //调用微信支付退款接口--还是因为没有企业资质所以把这个退款接口先注释掉
 //            weChatPayUtil.refund(
@@ -248,7 +249,7 @@ public class OrderServiceImpl implements OrderService {
         List<ShoppingCart> shoppingCartList = orderDetailList.stream().map(x -> {
             ShoppingCart shoppingCart = new ShoppingCart();
 
-            BeanUtils.copyProperties(x, shoppingCart,"id");
+            BeanUtils.copyProperties(x, shoppingCart, "id");
             shoppingCart.setUserId(userId);
             shoppingCart.setCreateTime(LocalDateTime.now());
 
@@ -257,5 +258,53 @@ public class OrderServiceImpl implements OrderService {
 
         //将购物车对象插入到购物车表
         shoppingCartMapper.insertBatch(shoppingCartList);
+    }
+
+    /*
+    条件查询订单
+     */
+    public PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO) {
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+        Page<Orders> page = orderMapper.pageQuery(ordersPageQueryDTO);
+
+        //部分订单状态需要额外返回订单菜品信息，将Orders转化为OrderVO
+        List<OrderVO> orderVOList = getOrderVOList(page);
+        return new PageResult(page.getTotal(), orderVOList);
+    }
+
+    private List<OrderVO> getOrderVOList(Page<Orders> page) {
+        //需要返回订单菜品信息，自定义OrderVO响应结果
+        List<OrderVO> orderVOList = new ArrayList<>();
+
+        List<Orders> ordersList = page.getResult();
+        if (!CollectionUtils.isEmpty(ordersList)) {
+            for (Orders orders : ordersList) {
+                OrderVO orderVO = new OrderVO();
+                BeanUtils.copyProperties(orders, orderVO);
+                String orderDishes = getOrderDishesStr(orders);
+
+                //将订单菜品信息封装到orderVO中，设置到orderVOList中
+                orderVO.setOrderDishes(orderDishes);
+                orderVOList.add(orderVO);
+            }
+        }
+        return orderVOList;
+    }
+
+    /*
+    根据订单id获取菜品信息字符串
+     */
+    private String getOrderDishesStr(Orders orders) {
+        //查询订单菜品详情信息
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
+
+        //将每一条订单菜品信息拼接为字符串（格式：甜甜圈*3）
+        List<String> orderDishList = orderDetailList.stream().map(x -> {
+            String orderDish = x.getName() + "*" + x.getNumber() + "；";
+            return orderDish;
+        }).collect(Collectors.toList());
+
+        //将该订单对应的所有菜品信息拼接在一起
+        return String.join("", orderDishList);
     }
 }
