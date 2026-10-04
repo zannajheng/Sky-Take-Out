@@ -56,10 +56,10 @@
                 and status = #{status}
             </if>
             <if test="number != null and number != ''">
-                and number = #{number}
+                and number like concat('%', #{number}, '%')
             </if>
             <if test="phone != null and phone != ''">
-                and phone = #{phone}
+                and phone like concat('%', #{phone}, '%')
             </if>
             <if test="beginTime != null">
                 and order_time &gt;= #{beginTime}
