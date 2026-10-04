@@ -18,6 +18,7 @@ import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -187,8 +188,17 @@ public class OrderServiceImpl implements OrderService {
         OrderVO orderVO = new OrderVO();
         Orders orders = orderMapper.getById(orderId);
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orderId);
+
+        //把口味拼到菜名上
+        for (OrderDetail od : orderDetailList) {
+            if(od.getDishFlavor() != null && !od.getDishFlavor().isEmpty()){
+                od.setName(od.getName() + "(" + od.getDishFlavor() + ")");
+            }
+        }
+
         BeanUtils.copyProperties(orders, orderVO);
         orderVO.setOrderDetailList(orderDetailList);
+
         return orderVO;
     }
 
@@ -299,7 +309,8 @@ public class OrderServiceImpl implements OrderService {
 
         //将每一条订单菜品信息拼接为字符串（格式：甜甜圈*3）
         List<String> orderDishList = orderDetailList.stream().map(x -> {
-            String orderDish = x.getName() + "*" + x.getNumber() + "；";
+            String flavorStr = x.getDishFlavor() != null && !x.getDishFlavor().isEmpty() ? "(" + x.getDishFlavor() + ")" : "";
+            String orderDish = x.getName() + flavorStr + "*" + x.getNumber() + "；";
             return orderDish;
         }).collect(Collectors.toList());
 
